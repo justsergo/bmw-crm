@@ -1,0 +1,3 @@
+.date::-webkit-calendar-picker-indicator {   
+    background: url('../../assets/images/triangle-down.svg') center/80% no-repeat;
+}

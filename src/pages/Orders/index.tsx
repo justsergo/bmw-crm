@@ -59,38 +59,6 @@ const Orders = () => {
               </Tr>
             </Thead>
             <Tbody>
-              <Tr>
-                <Td>inches</Td>
-                <Td>millimetres (mm)</Td>
-                <Td>millimetres (mm)</Td>
-                <Td>millimetres (mm)</Td>
-                <Td>millimetres (mm)</Td>
-                <Td>millimetres (mm)</Td>
-                <Td>millimetres (mm)</Td>
-                <Td>millimetres (mm)</Td>
-                <Td isNumeric>25.4</Td>
-                <Td isNumeric>25.4</Td>
-                <Td>
-                  <ButtonGroup gap="2">
-                    <Tooltip label="Отменить заказ">
-                      <IconButton
-                        aria-label="declare order"
-                        variant="ghost"
-                        colorScheme="red"
-                        icon={<CloseIcon />}
-                      />
-                    </Tooltip>
-                    <Tooltip label="Завершить заказ">
-                      <IconButton
-                        aria-label="approve order"
-                        variant="ghost"
-                        colorScheme="green"
-                        icon={<CheckIcon />}
-                      />
-                    </Tooltip>
-                  </ButtonGroup>
-                </Td>
-              </Tr>
               {orders.map((item: any) => (
                 <Tr key={item}>
                   <Td>inches</Td>

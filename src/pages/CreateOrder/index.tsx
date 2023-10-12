@@ -7,7 +7,8 @@ import {
   CardHeader,
   Grid,
   GridItem,
-  Heading
+  Heading,
+  Text
 } from '@chakra-ui/react';
 import SideBar from './SideBar';
 import OrderTable from './OrderTable';
@@ -48,32 +49,43 @@ const CreateOrder = () => {
     [handleSubmit]
   );
   return (
-    <Card>
-      <CardHeader>
-        <Heading size="md">Создание заказов</Heading>
-      </CardHeader>
-
-      <CardBody>
-        <Grid templateColumns="repeat(3, 1fr)" gap={2}>
-          <GridItem>
-            <SideBar setValue={setValue} control={control} />
-          </GridItem>
-          <GridItem colSpan={2}>
-            <OrderTable control={control} />
-          </GridItem>
-        </Grid>
-        <Box py={2}>
-          <ButtonGroup gap="2">
-            <Button colorScheme="blackAlpha" onClick={sumbitHandler}>
-              Сохранить
-            </Button>
-            <Button colorScheme="blackAlpha" onClick={goBack}>
-              Отменить
-            </Button>
-          </ButtonGroup>
-        </Box>
-      </CardBody>
-    </Card>
+    <Box p={10}>
+      <Heading lineHeight="tall" mb={5}>
+        Создание заказов
+      </Heading>
+      <Grid templateColumns="repeat(4, 1fr)">
+        <GridItem>
+          <SideBar setValue={setValue} control={control} />
+        </GridItem>
+        <GridItem colSpan={3}>
+          <OrderTable control={control} />
+          <Grid templateColumns="repeat(3, 1fr)">
+            <GridItem>
+              <Text>Сумма</Text>
+            </GridItem>
+            <GridItem colSpan={2}>
+              <Text pl={'70px'}>12</Text>
+            </GridItem>
+            <GridItem>
+              <Text>Сумма с доставкой</Text>
+            </GridItem>
+            <GridItem colSpan={2}>
+              <Text pl={'70px'}>13</Text>
+            </GridItem>
+          </Grid>
+          <Box py={2} display={'flex'} justifyContent={'flex-end'}>
+            <ButtonGroup gap="2">
+              <Button colorScheme="blackAlpha" onClick={sumbitHandler}>
+                Сохранить
+              </Button>
+              <Button colorScheme="blackAlpha" onClick={goBack}>
+                Отменить
+              </Button>
+            </ButtonGroup>
+          </Box>
+        </GridItem>
+      </Grid>
+    </Box>
   );
 };
 

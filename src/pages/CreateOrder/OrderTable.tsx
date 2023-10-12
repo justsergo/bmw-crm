@@ -1,24 +1,32 @@
 import {
   Box,
   Button,
-  ButtonGroup,
+  Input,
   Table,
   TableContainer,
   Tbody,
   Td,
-  Tfoot,
+  Text,
   Th,
   Thead,
   Tr
 } from '@chakra-ui/react';
+import { useState } from 'react';
 import { UseControllerProps } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 
 const OrderTable = ({ control }: { control: UseControllerProps['control'] }): JSX.Element => {
+  const [tableRows, addTableRows] = useState<number[]>([]);
+  const addRows = () => {
+    const itemId = new Date().getTime();
+    addTableRows((prevRows) => prevRows.concat([itemId]));
+  };
   return (
     <Box>
-      <TableContainer>
-        <Table variant="simple">
+      <Text fontSize="xl" fontWeight={'bold'}>
+        Товары к заказу
+      </Text>
+      <TableContainer py={5}>
+        <Table variant="simple" colorScheme="blackAlpha">
           <Thead>
             <Tr>
               <Th>№</Th>
@@ -30,32 +38,30 @@ const OrderTable = ({ control }: { control: UseControllerProps['control'] }): JS
             </Tr>
           </Thead>
           <Tbody>
+            {tableRows.map((value, index) => (
+              <Tr key={value}>
+                <Td>{index + 1}</Td>
+                <Td>
+                  <Input type="tel" placeholder="Название" />
+                </Td>
+                <Td>
+                  <Input type="tel" placeholder="Артикул" />
+                </Td>
+                <Td>
+                  <Input type="tel" placeholder="Количество" />
+                </Td>
+                <Td>комментарий</Td>
+                <Td>цена</Td>
+              </Tr>
+            ))}
             <Tr>
-              <Td>inches</Td>
-              <Td>millimetres (mm)</Td>
-              <Td>millimetres (mm)</Td>
-              <Td>millimetres (mm)</Td>
-              <Td>millimetres (mm)</Td>
-              <Td>millimetres (mm)</Td>
-            </Tr>
-            <Tr>
-              <Td>feet</Td>
-              <Td>centimetres (cm)</Td>
-              <Td isNumeric>30.48</Td>
-            </Tr>
-            <Tr>
-              <Td>yards</Td>
-              <Td>metres (m)</Td>
-              <Td isNumeric>0.91444</Td>
+              <Td colSpan={5} textAlign={'center'}>
+                <Button variant="link" onClick={addRows}>
+                  Заполните данные по товару
+                </Button>
+              </Td>
             </Tr>
           </Tbody>
-          <Tfoot>
-            <Tr>
-              <Th>To convert</Th>
-              <Th>into</Th>
-              <Th isNumeric>multiply by</Th>
-            </Tr>
-          </Tfoot>
         </Table>
       </TableContainer>
     </Box>
