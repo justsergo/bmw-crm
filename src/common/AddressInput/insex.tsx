@@ -1,13 +1,20 @@
-import { Select } from 'chakra-react-select';
 import { useCallback, useState } from 'react';
+import './styles.css';
+
+import { Select } from 'chakra-react-select';
+import { UseFormSetValue } from 'react-hook-form';
+import { FormValues } from '../../constants';
 
 type Props = {
   value: string;
-  onChange: () => void;
+  setValue: UseFormSetValue<FormValues>;
 };
 
-const AddressInput = ({ value, onChange }: Props) => {
-  const [options, setOptions] = useState<Array<{ value: string; label: string }>>([]);
+type SelectOptionType = { label: string; value: string };
+
+const AddressInput = ({ value, setValue }: Props) => {
+  const [options, setOptions] = useState<Array<SelectOptionType>>([]);
+
   const searchAddress = useCallback((value: string) => {
     fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address', {
       method: 'POST',
@@ -24,19 +31,19 @@ const AddressInput = ({ value, onChange }: Props) => {
         setOptions(
           result.suggestions
             .slice(0, 5)
-            .map(({ value }: { value: string }) => ({ value, label: value }))
+            .map(({ value }: { value: string }): SelectOptionType => ({ value, label: value }))
         );
       })
       .catch((error) => console.log('error', error));
   }, []);
+
   return (
     <Select
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      onChange={(event: unknown) => onChange(event.value)}
+      onChange={(event: any) => setValue('address', event.value)}
       onInputChange={searchAddress}
       options={options}
       value={options.find((c) => c.value === value) || { value: value, label: value }}
+      className="select"
     />
   );
 };

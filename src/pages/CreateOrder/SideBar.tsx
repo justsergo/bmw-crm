@@ -1,5 +1,8 @@
+import { useCallback, useMemo, useState } from 'react';
+
 import dayjs from 'dayjs';
 import './sidebar.css';
+import Models from 'BMWCRM';
 
 import { CalendarIcon, CopyIcon } from '@chakra-ui/icons';
 import {
@@ -19,19 +22,25 @@ import {
   InputRightAddon,
   Stack,
   Text,
-  Textarea
+  Textarea,
+  Tooltip
 } from '@chakra-ui/react';
-import { Controller, UseControllerProps } from 'react-hook-form';
+import {
+  Controller,
+  Control,
+  UseFormSetValue,
+  FieldError,
+  UseControllerProps
+} from 'react-hook-form';
 import clients from '../../store/clients/data.json';
-import Models from 'BMWCRM';
-import { useCallback, useMemo, useState } from 'react';
 import { Select } from 'chakra-react-select';
 import AddressInput from '../../common/AddressInput/insex';
-import { FORMAT } from '../../constants/sideBar';
+import { FormValues, FORMAT } from '../../constants';
 
 type Props = {
-  setValue: (name: string, value: unknown) => void;
-  control: UseControllerProps['control'];
+  setValue: UseFormSetValue<FormValues>;
+  control: Control<FormValues>;
+  errors: UseControllerProps<FieldError>;
 };
 
 type OnChangeEvent = {
@@ -54,19 +63,20 @@ const ButtonItem = ({
   );
 };
 
-const SideBar = ({ setValue, control }: Props): JSX.Element => {
-  const [date, setDate] = useState<string>('');
+const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
   const [idButton, setIdButton] = useState<string | null>(null);
 
   const chooseRegularClient = useCallback(
     (event: OnChangeEvent) => {
       if (!event) {
+        setValue('regularClient', '');
         setValue('phone', '');
         setValue('address', '');
         return;
       }
       const regularClient = clients.find((item) => item.id === event.value);
       if (regularClient) {
+        setValue('regularClient', regularClient.name);
         setValue('phone', regularClient.phone);
         setValue('address', regularClient.address);
       }
@@ -85,40 +95,43 @@ const SideBar = ({ setValue, control }: Props): JSX.Element => {
         title: 'Сегодня',
         func: (event: React.MouseEvent<HTMLButtonElement>) => {
           setIdButton(event.currentTarget.id);
-          setDate(dayjs().format(FORMAT));
+          setValue('date', dayjs().format(FORMAT));
         }
       },
       {
         title: 'Завтра',
         func: (event: React.MouseEvent<HTMLButtonElement>) => {
           setIdButton(event.currentTarget.id);
-          setDate(dayjs().add(1, 'day').format(FORMAT));
+          setValue('date', dayjs().add(1, 'day').format(FORMAT));
         }
       },
       {
         title: 'Послезавтра',
         func: (event: React.MouseEvent<HTMLButtonElement>) => {
           setIdButton(event.currentTarget.id);
-          setDate(dayjs().add(2, 'day').format(FORMAT));
+          setValue('date', dayjs().add(2, 'day').format(FORMAT));
         }
       }
     ],
     [idButton]
   );
 
-  const dateHandler = ({ target: { value } }: { target: HTMLInputElement }) => {
-    setDate(dayjs(value).format(FORMAT));
-  };
-
   return (
     <Stack direction="row" h={'100%'} w={'100%'} pr={10}>
       <Grid templateRows="repeat(2, 1fr)" gap={2} paddingRight={10}>
         <GridItem>
-          <Text fontSize="md">Данные заказа</Text>
+          <Text fontSize="xl" fontWeight={'bold'}>
+            Данные заказа
+          </Text>
           <Box py={2}>
             <FormControl>
               <FormLabel>Постоянный клиент</FormLabel>
-              <Select onChange={chooseRegularClient} options={options} isClearable />
+              <Select
+                onChange={chooseRegularClient}
+                options={options}
+                isClearable
+                placeholder="Введите постоянного клиента"
+              />
             </FormControl>
           </Box>
           <Box py={2}>
@@ -128,7 +141,14 @@ const SideBar = ({ setValue, control }: Props): JSX.Element => {
               rules={{ required: 'required' }}
               render={({ field: { onChange, value } }) => (
                 <FormControl>
-                  <FormLabel>Номер телефона</FormLabel>
+                  <FormLabel>
+                    Номер телефона
+                    {errors.phone && (
+                      <Text as="i" color="tomato" fontSize="sm" ml={2}>
+                        Обязательное поле
+                      </Text>
+                    )}
+                  </FormLabel>
                   <InputGroup>
                     <InputLeftAddon>+234</InputLeftAddon>
                     <Input
@@ -143,10 +163,16 @@ const SideBar = ({ setValue, control }: Props): JSX.Element => {
             />
           </Box>
           <Box py={2}>
-            <FormControl>
-              <FormLabel>Комментарий</FormLabel>
-              <Textarea placeholder="Here is a sample placeholder" />
-            </FormControl>
+            <Controller
+              name="comment"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <FormControl>
+                  <FormLabel>Комментарий</FormLabel>
+                  <Textarea placeholder="Введите комментарий" value={value} onChange={onChange} />
+                </FormControl>
+              )}
+            />
           </Box>
         </GridItem>
 
@@ -157,45 +183,82 @@ const SideBar = ({ setValue, control }: Props): JSX.Element => {
               name="address"
               control={control}
               rules={{ required: 'required' }}
-              render={({ field: { onChange, value } }) => (
+              render={({ field: { value } }) => (
                 <FormControl>
-                  <FormLabel>Адрес</FormLabel>
+                  <FormLabel>
+                    Адрес
+                    {errors.address && (
+                      <Text as="i" color="tomato" fontSize="sm" ml={2}>
+                        Обязательное поле
+                      </Text>
+                    )}
+                  </FormLabel>
                   <Flex>
-                    <AddressInput value={value} onChange={onChange} />
-                    <Button>
-                      <CopyIcon />
-                    </Button>
+                    <AddressInput value={value} setValue={setValue} />
+                    <Tooltip label="Скопировать адрес">
+                      <Button
+                        variant="outline"
+                        ml={2}
+                        onClick={() => navigator.clipboard.writeText(value)}>
+                        <CopyIcon />
+                      </Button>
+                    </Tooltip>
                   </Flex>
                 </FormControl>
               )}
             />
           </Box>
           <Box py={2}>
-            <FormControl>
-              <FormLabel>Стоиомсть</FormLabel>
-              <InputGroup>
-                <Input type="tel" placeholder="phone number" />
-                <InputRightAddon>rub</InputRightAddon>
-              </InputGroup>
-            </FormControl>
+            <Controller
+              name="costDeleviry"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <FormControl>
+                  <FormLabel>Стоиомсть</FormLabel>
+                  <InputGroup>
+                    <Input
+                      type="number"
+                      placeholder="Введите стоимость"
+                      onChange={onChange}
+                      value={value}
+                    />
+                    <InputRightAddon>RUB</InputRightAddon>
+                  </InputGroup>
+                </FormControl>
+              )}
+            />
           </Box>
           <Box py={2}>
-            <FormControl>
-              <FormLabel>Дата</FormLabel>
-              <InputGroup size="md">
-                <InputLeftElement>
-                  <CalendarIcon />
-                </InputLeftElement>
-                <Input
-                  placeholder="Select Date and Time"
-                  size="md"
-                  type="date"
-                  className="date"
-                  value={date}
-                  onChange={dateHandler}
-                />
-              </InputGroup>
-            </FormControl>
+            <Controller
+              name="date"
+              control={control}
+              rules={{ required: 'required' }}
+              render={({ field: { onChange, value } }) => (
+                <FormControl>
+                  <FormLabel>
+                    Дата
+                    {errors.date && (
+                      <Text as="i" color="tomato" fontSize="sm" ml={2}>
+                        Обязательное поле
+                      </Text>
+                    )}
+                  </FormLabel>
+                  <InputGroup size="md">
+                    <InputLeftElement>
+                      <CalendarIcon />
+                    </InputLeftElement>
+                    <Input
+                      placeholder="Select Date and Time"
+                      size="md"
+                      type="date"
+                      className="date"
+                      value={value}
+                      onChange={onChange}
+                    />
+                  </InputGroup>
+                </FormControl>
+              )}
+            />
           </Box>
           <Box py={2}>
             <ButtonGroup gap="2">
