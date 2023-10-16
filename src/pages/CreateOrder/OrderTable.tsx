@@ -71,7 +71,7 @@ const OrderTable = ({ control, errors, register, setValue }: Props): JSX.Element
                 <Td>
                   <Input
                     type="text"
-                    placeholder="Название"
+                    placeholder="Артикул"
                     {...register(`productsToOrder.${index}.articul` as const, {
                       required: true,
                       onChange: (ev) =>
@@ -88,7 +88,7 @@ const OrderTable = ({ control, errors, register, setValue }: Props): JSX.Element
                 <Td>
                   <Input
                     type="number"
-                    placeholder="Название"
+                    placeholder="Количество"
                     {...register(`productsToOrder.${index}.count` as const, {
                       required: true
                     })}
@@ -98,7 +98,7 @@ const OrderTable = ({ control, errors, register, setValue }: Props): JSX.Element
                 <Td>
                   <Input
                     type="number"
-                    placeholder="Название"
+                    placeholder="Цена"
                     {...register(`productsToOrder.${index}.costProduct` as const, {
                       required: true
                     })}
@@ -108,7 +108,7 @@ const OrderTable = ({ control, errors, register, setValue }: Props): JSX.Element
                 <Td>
                   <Input
                     type="text"
-                    placeholder="Название"
+                    placeholder="Комментарий"
                     {...register(`productsToOrder.${index}.commentProduct` as const)}
                   />
                 </Td>

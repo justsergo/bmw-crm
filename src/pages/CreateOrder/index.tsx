@@ -38,7 +38,9 @@ const CreateOrder = () => {
       count: '',
       commentProduct: '',
       status: statusTypes.CREATE,
-      productsToOrder: []
+      productsToOrder: [
+        { name: '', articul: '', count: '', commentProduct: '', costProduct: undefined }
+      ]
     }
   });
 
