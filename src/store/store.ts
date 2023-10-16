@@ -1,20 +1,32 @@
 import { createSlice, configureStore } from '@reduxjs/toolkit';
+import { FormValues } from '../types';
+
+interface CounterState {
+  orders: FormValues[];
+}
+
+const initialState: CounterState = {
+  orders: []
+};
 
 const orderSlice = createSlice({
   name: 'orders',
-  initialState: {
-    orders: []
-  },
+  initialState,
   reducers: {
-    addOrder: (state, { payload }) => {
+    addOrder: (state, { payload }: { payload: FormValues }) => {
       state.orders = state.orders.concat(payload);
-      console.log('addOrder', state.orders);
+    },
+    updateOrders: (state, { payload }: { payload: FormValues[] }) => {
+      state.orders = payload;
     }
   }
 });
 
-export const { addOrder } = orderSlice.actions;
+export const { addOrder, updateOrders } = orderSlice.actions;
 
 export const store = configureStore({
   reducer: orderSlice.reducer
 });
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

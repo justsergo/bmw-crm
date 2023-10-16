@@ -4,8 +4,6 @@ import { AddIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import {
   Button,
   ButtonGroup,
-  Card,
-  CardHeader,
   Flex,
   IconButton,
   Spacer,
@@ -13,144 +11,142 @@ import {
   TableContainer,
   Tbody,
   Td,
-  Tag,
   Th,
   Thead,
   Tooltip,
   Tr,
-  CardBody,
-  Heading
+  Heading,
+  Box
 } from '@chakra-ui/react';
 import { equals } from 'ramda';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { getOrders } from '../../store/selectors';
-import { FormValues, statusTypes } from '../../constants';
-
-const statusVariant = {
-  CREATE: { title: 'Создан', color: 'green', status: statusTypes.CREATE },
-  COMPLETE: { title: 'Завершен', color: 'purple', status: statusTypes.COMPLETE },
-  REJECT: { title: 'Отменён', color: 'red', status: statusTypes.REJECT }
-};
-
-const Status = ({ rowStatus, index }: { rowStatus: RowStatus; index: number }) => {
-  const findItem = rowStatus?.find((item) => item.index === index)?.status || '';
-  const variant = statusVariant[findItem];
-  return (
-    <Tag variant="subtle" colorScheme={variant?.color} border="1px solid">
-      {variant?.title}
-    </Tag>
-  );
-};
-
-type RowStatus = Array<{ status: string; index: number }>;
+import { updateOrders } from '../../store/store';
+import { statusTypes } from '../../constants';
+import { FormValues } from '../../types';
+import Status from '../../common/Status';
 
 const Orders = () => {
-  const [rowStatus, setRowStatus] = useState<RowStatus>([]);
+  const [orders, setOrders] = useState<FormValues[]>([]);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const orders: FormValues[] = useSelector(getOrders, equals);
+  const ordersState = useSelector(getOrders, equals);
+
+  useEffect(() => {
+    setOrders(ordersState as FormValues[]);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      dispatch(updateOrders(orders));
+    };
+  }, [orders]);
 
   const toCreateOrder = () => navigate('/create');
 
-  useEffect(() => {
-    setRowStatus(orders.map(({ status }, index) => ({ status: status, index: index })));
-  }, []);
-
-  const rejectOrder = (index: number) => {
-    setRowStatus([
-      ...rowStatus,
-      (rowStatus.find((item) => item.index === index).status = statusTypes.REJECT)
-    ]);
+  const rejectOrder = (id: number) => {
+    const prevOrders = JSON.parse(JSON.stringify(orders));
+    const newOrders = prevOrders.map((item: FormValues) => {
+      if (item.id === id) {
+        item.status = statusTypes.REJECT;
+      }
+      return item;
+    });
+    setOrders(newOrders);
   };
 
-  const completeOrder = (index: number) => {
-    setRowStatus([
-      ...rowStatus,
-      (rowStatus.find((item) => item.index === index).status = statusTypes.COMPLETE)
-    ]);
+  const completeOrder = (id: number) => {
+    const prevOrders = JSON.parse(JSON.stringify(orders));
+    const newOrders = prevOrders.map((item: FormValues) => {
+      if (item.id === id) {
+        item.status = statusTypes.COMPLETE;
+      }
+      return item;
+    });
+    setOrders(newOrders);
   };
-
-  useEffect(() => {
-    console.log('rowStatus', rowStatus);
-  }, [rowStatus]);
 
   return (
-    <Card>
-      <CardHeader>
-        <Flex>
-          <Heading size="md">Заказы</Heading>
-          <Spacer />
-          <Button leftIcon={<AddIcon />} colorScheme="blue" variant="solid" onClick={toCreateOrder}>
-            Добавить заказ
-          </Button>
-        </Flex>
-      </CardHeader>
+    <Box p={10}>
+      <Flex>
+        <Heading lineHeight="tall" mb={5} color={'blackAlpha.700'}>
+          Заказы
+        </Heading>
+        <Spacer />
+        <Button leftIcon={<AddIcon />} colorScheme="blue" variant="solid" onClick={toCreateOrder}>
+          Добавить заказ
+        </Button>
+      </Flex>
 
-      <CardBody>
-        <TableContainer>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>№</Th>
-                <Th>Клиент</Th>
-                <Th>Номер телефона</Th>
-                <Th>Статус</Th>
-                <Th>Дата доставки</Th>
-                <Th>Адрес доставки</Th>
-                <Th>Кол-во</Th>
-                <Th>Стоимость товаров (rub)</Th>
-                <Th>Стоимость доставки (rub)</Th>
-                <Th>Комментарий</Th>
-                <Th>Действия</Th>
+      <TableContainer>
+        <Table variant="simple" colorScheme="blackAlpha">
+          <Thead backgroundColor={'blackAlpha.50'}>
+            <Tr>
+              <Th>№</Th>
+              <Th>Клиент</Th>
+              <Th>Номер телефона</Th>
+              <Th>Статус</Th>
+              <Th>Дата доставки</Th>
+              <Th>Адрес доставки</Th>
+              <Th>Кол-во</Th>
+              <Th>Стоимость товаров (rub)</Th>
+              <Th>Стоимость доставки (rub)</Th>
+              <Th>Комментарий</Th>
+              <Th>Действия</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {orders.map((item, index) => (
+              <Tr key={item.id}>
+                <Td>{index + 1}</Td>
+                <Td>{item.regularClient}</Td>
+                <Td>{item.phone}</Td>
+                <Td>{<Status status={item.status} />}</Td>
+                <Td>{item.date}</Td>
+                <Td>{item.address}</Td>
+                <Td>{item.countProducts}</Td>
+                <Td>
+                  {item.productsToOrder.reduce(
+                    (acc, { costProduct }) => Number(costProduct || 0) + acc,
+                    0
+                  )}
+                </Td>
+                <Td>{item.costDeleviry}</Td>
+                <Td>{item.comment}</Td>
+                <Td>
+                  {item?.status === statusTypes.CREATE && (
+                    <ButtonGroup gap="2">
+                      <Tooltip label="Отменить заказ">
+                        <IconButton
+                          aria-label="declare order"
+                          variant="ghost"
+                          colorScheme="red"
+                          icon={<CloseIcon />}
+                          onClick={() => rejectOrder(item.id)}
+                        />
+                      </Tooltip>
+                      <Tooltip label="Завершить заказ">
+                        <IconButton
+                          aria-label="complete order"
+                          variant="ghost"
+                          colorScheme="green"
+                          icon={<CheckIcon />}
+                          onClick={() => completeOrder(item.id)}
+                        />
+                      </Tooltip>
+                    </ButtonGroup>
+                  )}
+                </Td>
               </Tr>
-            </Thead>
-            <Tbody>
-              {orders.map((item, index) => (
-                <Tr key={item.phone + item.regularClient}>
-                  <Td>{index + 1}</Td>
-                  <Td>{item.regularClient}</Td>
-                  <Td>{item.phone}</Td>
-                  <Td>{<Status rowStatus={rowStatus} index={index} />}</Td>
-                  <Td>{item.date}</Td>
-                  <Td>{item.address}</Td>
-                  <Td>{item.count}</Td>
-                  <Td>{item.costProduct}</Td>
-                  <Td>{item.costDeleviry}</Td>
-                  <Td>{item.comment}</Td>
-                  <Td>
-                    {rowStatus?.find((item) => item.index === index)?.status ===
-                      statusTypes.CREATE && (
-                      <ButtonGroup gap="2">
-                        <Tooltip label="Отменить заказ">
-                          <IconButton
-                            aria-label="declare order"
-                            variant="ghost"
-                            colorScheme="red"
-                            icon={<CloseIcon />}
-                            onClick={() => rejectOrder(index)}
-                          />
-                        </Tooltip>
-                        <Tooltip label="Завершить заказ">
-                          <IconButton
-                            aria-label="complete order"
-                            variant="ghost"
-                            colorScheme="green"
-                            icon={<CheckIcon />}
-                            onClick={() => completeOrder(index)}
-                          />
-                        </Tooltip>
-                      </ButtonGroup>
-                    )}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </CardBody>
-    </Card>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 

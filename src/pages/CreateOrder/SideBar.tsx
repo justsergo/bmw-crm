@@ -25,46 +25,34 @@ import {
   Textarea,
   Tooltip
 } from '@chakra-ui/react';
-import {
-  Controller,
-  Control,
-  UseFormSetValue,
-  FieldError,
-  UseControllerProps
-} from 'react-hook-form';
+import { Select as ChakraSelect } from '@chakra-ui/react';
+import { Controller, Control, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import clients from '../../store/clients/data.json';
 import { Select } from 'chakra-react-select';
 import AddressInput from '../../common/AddressInput/insex';
-import { FormValues, FORMAT } from '../../constants';
+import { FORMAT, regionTypes } from '../../constants';
+import InputMask from 'react-input-mask';
+import { makePhoneNumber } from '../../utils/makePhoneNumber';
+import { FormValues } from '../../types';
 
 type Props = {
   setValue: UseFormSetValue<FormValues>;
   control: Control<FormValues>;
-  errors: UseControllerProps<FieldError>;
+  errors: FieldErrors<FormValues>;
 };
 
 type OnChangeEvent = {
   value: number;
 } | null;
 
-const ButtonItem = ({
-  onClick,
-  title,
-  isActive
-}: {
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  title: string;
-  isActive: boolean;
-}) => {
-  return (
-    <Button onClick={onClick} id={title} variant={isActive ? 'solid' : 'outline'}>
-      {title}
-    </Button>
-  );
+const masks = {
+  BY: '+375 (99) 999-99-99',
+  RU: '+7 (999) 999-99-99'
 };
 
 const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
   const [idButton, setIdButton] = useState<string | null>(null);
+  const [region, setRegion] = useState<string>(regionTypes.RU);
 
   const chooseRegularClient = useCallback(
     (event: OnChangeEvent) => {
@@ -77,7 +65,7 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
       const regularClient = clients.find((item) => item.id === event.value);
       if (regularClient) {
         setValue('regularClient', regularClient.name);
-        setValue('phone', regularClient.phone);
+        setValue('phone', makePhoneNumber(regularClient.phone, regionTypes.RU));
         setValue('address', regularClient.address);
       }
     },
@@ -120,12 +108,12 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
     <Stack direction="row" h={'100%'} w={'100%'} pr={10}>
       <Grid templateRows="repeat(2, 1fr)" gap={2} paddingRight={10}>
         <GridItem>
-          <Text fontSize="xl" fontWeight={'bold'}>
+          <Text color={'blackAlpha.700'} fontSize="xl" fontWeight={'bold'}>
             Данные заказа
           </Text>
           <Box py={2}>
             <FormControl>
-              <FormLabel>Постоянный клиент</FormLabel>
+              <FormLabel color={'blackAlpha.700'}>Постоянный клиент</FormLabel>
               <Select
                 onChange={chooseRegularClient}
                 options={options}
@@ -141,7 +129,7 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
               rules={{ required: 'required' }}
               render={({ field: { onChange, value } }) => (
                 <FormControl>
-                  <FormLabel>
+                  <FormLabel color={'blackAlpha.700'}>
                     Номер телефона
                     {errors.phone && (
                       <Text as="i" color="tomato" fontSize="sm" ml={2}>
@@ -149,14 +137,23 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
                       </Text>
                     )}
                   </FormLabel>
+
                   <InputGroup>
-                    <InputLeftAddon>+234</InputLeftAddon>
-                    <Input
-                      type="tel"
-                      placeholder="phone number"
+                    <InputLeftAddon background={'none'} p={0}>
+                      <ChakraSelect
+                        onChange={(value) => setRegion(value.target.value)}
+                        value={region}>
+                        <option value={regionTypes.RU}>{'\uD83C\uDDF7\uD83C\uDDFA'}</option>
+                        <option value={regionTypes.BY}>{'\uD83C\uDDE7\uD83C\uDDFE'}</option>
+                      </ChakraSelect>
+                    </InputLeftAddon>
+                    <InputMask
+                      mask={masks[region]}
                       value={value}
                       onChange={onChange}
-                    />
+                      placeholder={masks[region]}>
+                      {(inputProps) => <Input type="tel" {...inputProps} />}
+                    </InputMask>
                   </InputGroup>
                 </FormControl>
               )}
@@ -168,7 +165,7 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
               control={control}
               render={({ field: { onChange, value } }) => (
                 <FormControl>
-                  <FormLabel>Комментарий</FormLabel>
+                  <FormLabel color={'blackAlpha.700'}>Комментарий</FormLabel>
                   <Textarea placeholder="Введите комментарий" value={value} onChange={onChange} />
                 </FormControl>
               )}
@@ -177,7 +174,9 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
         </GridItem>
 
         <GridItem>
-          <Text fontSize="md">Доставка</Text>
+          <Text color={'blackAlpha.700'} fontSize="xl" fontWeight={'bold'}>
+            Доставка
+          </Text>
           <Box py={2}>
             <Controller
               name="address"
@@ -185,7 +184,7 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
               rules={{ required: 'required' }}
               render={({ field: { value } }) => (
                 <FormControl>
-                  <FormLabel>
+                  <FormLabel color={'blackAlpha.700'}>
                     Адрес
                     {errors.address && (
                       <Text as="i" color="tomato" fontSize="sm" ml={2}>
@@ -199,7 +198,8 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
                       <Button
                         variant="outline"
                         ml={2}
-                        onClick={() => navigator.clipboard.writeText(value)}>
+                        onClick={() => navigator.clipboard.writeText(value)}
+                        colorScheme="blue">
                         <CopyIcon />
                       </Button>
                     </Tooltip>
@@ -214,7 +214,7 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
               control={control}
               render={({ field: { onChange, value } }) => (
                 <FormControl>
-                  <FormLabel>Стоиомсть</FormLabel>
+                  <FormLabel color={'blackAlpha.700'}>Стоиомсть</FormLabel>
                   <InputGroup>
                     <Input
                       type="number"
@@ -235,7 +235,7 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
               rules={{ required: 'required' }}
               render={({ field: { onChange, value } }) => (
                 <FormControl>
-                  <FormLabel>
+                  <FormLabel color={'blackAlpha.700'}>
                     Дата
                     {errors.date && (
                       <Text as="i" color="tomato" fontSize="sm" ml={2}>
@@ -245,7 +245,7 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
                   </FormLabel>
                   <InputGroup size="md">
                     <InputLeftElement>
-                      <CalendarIcon />
+                      <CalendarIcon color={'blue.500'} />
                     </InputLeftElement>
                     <Input
                       placeholder="Select Date and Time"
@@ -264,7 +264,16 @@ const SideBar = ({ setValue, control, errors }: Props): JSX.Element => {
             <ButtonGroup gap="2">
               {buttonsData.map(({ title, func }) => {
                 const isActive = idButton === title;
-                return <ButtonItem onClick={func} title={title} key={title} isActive={isActive} />;
+                return (
+                  <Button
+                    key={title}
+                    onClick={func}
+                    id={title}
+                    variant={isActive ? 'solid' : 'outline'}
+                    colorScheme="blue">
+                    {title}
+                  </Button>
+                );
               })}
             </ButtonGroup>
           </Box>

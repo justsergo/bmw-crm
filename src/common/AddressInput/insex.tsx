@@ -3,7 +3,7 @@ import './styles.css';
 
 import { Select } from 'chakra-react-select';
 import { UseFormSetValue } from 'react-hook-form';
-import { FormValues } from '../../constants';
+import { FormValues } from '../../types';
 
 type Props = {
   value: string;
@@ -11,6 +11,8 @@ type Props = {
 };
 
 type SelectOptionType = { label: string; value: string };
+
+const apiKey: string = process.env.REACT_APP_DADATA_API_KEY;
 
 const AddressInput = ({ value, setValue }: Props) => {
   const [options, setOptions] = useState<Array<SelectOptionType>>([]);
@@ -22,7 +24,7 @@ const AddressInput = ({ value, setValue }: Props) => {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: 'Token ' + '84e4ac66b6e9a8eee59bb64e66cf3ebad1d37b93'
+        Authorization: 'Token ' + apiKey
       },
       body: JSON.stringify({ query: value })
     })
@@ -39,7 +41,7 @@ const AddressInput = ({ value, setValue }: Props) => {
 
   return (
     <Select
-      onChange={(event: any) => setValue('address', event.value)}
+      onChange={(event: SelectOptionType | null) => setValue('address', event.value)}
       onInputChange={searchAddress}
       options={options}
       value={options.find((c) => c.value === value) || { value: value, label: value }}

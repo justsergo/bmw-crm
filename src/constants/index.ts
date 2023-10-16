@@ -6,17 +6,7 @@ export const statusTypes = {
   CREATE: 'CREATE'
 };
 
-export interface FormValues {
-  regularClient: string;
-  phone: string;
-  comment: string;
-  address: string;
-  costDeleviry: number | undefined;
-  date: string;
-  name: string;
-  articul: string;
-  count: string;
-  commentProduct: string;
-  costProduct: number | undefined;
-  status: string;
-}
+export const regionTypes = {
+  BY: 'BY',
+  RU: 'RU'
+};

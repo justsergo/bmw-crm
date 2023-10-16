@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import {
   Box,
   Button,
@@ -13,128 +11,105 @@ import {
   Thead,
   Tr
 } from '@chakra-ui/react';
-import { Control, Controller, FieldError, UseControllerProps } from 'react-hook-form';
-import { FormValues } from '../../constants';
+import {
+  Control,
+  FieldErrors,
+  useFieldArray,
+  UseFormRegister,
+  UseFormSetValue
+} from 'react-hook-form';
+import { FormValues } from '../../types';
 
 type Props = {
   control: Control<FormValues>;
-  errors: UseControllerProps<FieldError>;
+  errors: FieldErrors<FormValues>;
+  register: UseFormRegister<FormValues>;
+  setValue: UseFormSetValue<FormValues>;
 };
 
-const OrderTable = ({ control, errors }: Props): JSX.Element => {
-  const [tableRows, addTableRows] = useState<number[]>([]);
+const OrderTable = ({ control, errors, register, setValue }: Props): JSX.Element => {
+  const { fields, append } = useFieldArray({
+    control,
+    name: 'productsToOrder'
+  });
 
   const addRows = () => {
-    const itemId = new Date().getTime();
-    addTableRows((prevRows) => prevRows.concat([itemId]));
+    append({ name: '', articul: '', count: '', commentProduct: '', costProduct: undefined });
   };
 
   return (
     <Box>
-      <Text fontSize="xl" fontWeight={'bold'}>
+      <Text color={'blackAlpha.700'} fontSize="xl" fontWeight={'bold'}>
         Товары к заказу
       </Text>
       <TableContainer py={5}>
         <Table variant="simple" colorScheme="blackAlpha">
-          <Thead>
+          <Thead backgroundColor={'blackAlpha.50'}>
             <Tr>
               <Th>№</Th>
-              <Th>
-                Название
-                {errors.name && (
-                  <Text as="i" color="tomato" fontSize="xs" textTransform="none" ml={2}>
-                    Обязательное поле
-                  </Text>
-                )}
-              </Th>
-              <Th>
-                Артикул
-                {errors.articul && (
-                  <Text as="i" color="tomato" fontSize="xs" textTransform="none" ml={2}>
-                    Обязательное поле
-                  </Text>
-                )}
-              </Th>
-              <Th>
-                Количество
-                {errors.count && (
-                  <Text as="i" color="tomato" fontSize="xs" textTransform="none" ml={2}>
-                    Обязательное поле
-                  </Text>
-                )}
-              </Th>
-              <Th>
-                Цена (rub)
-                {errors.costProduct && (
-                  <Text as="i" color="tomato" fontSize="xs" textTransform="none" ml={2}>
-                    Обязательное поле
-                  </Text>
-                )}
-              </Th>
+              <Th>Название</Th>
+              <Th>Артикул</Th>
+              <Th>Количество</Th>
+              <Th>Цена (rub)</Th>
               <Th>Комментарий</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {tableRows.map((value, index) => (
-              <Tr key={value}>
+            {fields.map((item, index) => (
+              <Tr key={item.id}>
                 <Td>{index + 1}</Td>
                 <Td>
-                  <Controller
-                    name="name"
-                    control={control}
-                    rules={{ required: 'required' }}
-                    render={({ field: { onChange, value } }) => (
-                      <Input type="text" placeholder="Название" value={value} onChange={onChange} />
-                    )}
+                  <Input
+                    type="text"
+                    placeholder="Название"
+                    {...register(`productsToOrder.${index}.name` as const, {
+                      required: true
+                    })}
+                    isInvalid={Boolean(errors?.productsToOrder?.[index]?.name)}
                   />
                 </Td>
                 <Td>
-                  <Controller
-                    name="articul"
-                    control={control}
-                    rules={{ required: 'required' }}
-                    render={({ field: { onChange, value } }) => (
-                      <Input type="text" placeholder="Артикул" value={value} onChange={onChange} />
-                    )}
+                  <Input
+                    type="text"
+                    placeholder="Название"
+                    {...register(`productsToOrder.${index}.articul` as const, {
+                      required: true,
+                      onChange: (ev) =>
+                        setValue(
+                          `productsToOrder.${index}.articul`,
+                          String(
+                            ev.target.value.replace(/[^A-Za-z0-9]+/g, '')
+                          ).toUpperCase() as never
+                        )
+                    })}
+                    isInvalid={Boolean(errors?.productsToOrder?.[index]?.articul)}
                   />
                 </Td>
                 <Td>
-                  <Controller
-                    name="count"
-                    control={control}
-                    rules={{ required: 'required' }}
-                    render={({ field: { onChange, value } }) => (
-                      <Input
-                        type="number"
-                        placeholder="Количество"
-                        value={value}
-                        onChange={onChange}
-                      />
-                    )}
+                  <Input
+                    type="number"
+                    placeholder="Название"
+                    {...register(`productsToOrder.${index}.count` as const, {
+                      required: true
+                    })}
+                    isInvalid={Boolean(errors?.productsToOrder?.[index]?.count)}
                   />
                 </Td>
                 <Td>
-                  <Controller
-                    name="costProduct"
-                    control={control}
-                    rules={{ required: 'required' }}
-                    render={({ field: { onChange, value } }) => (
-                      <Input type="number" placeholder="Цена" value={value} onChange={onChange} />
-                    )}
+                  <Input
+                    type="number"
+                    placeholder="Название"
+                    {...register(`productsToOrder.${index}.costProduct` as const, {
+                      required: true
+                    })}
+                    isInvalid={Boolean(errors?.productsToOrder?.[index]?.costProduct)}
                   />
                 </Td>
                 <Td>
-                  <Controller
-                    name="commentProduct"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <Input
-                        type="text"
-                        placeholder="Комментарий"
-                        value={value}
-                        onChange={onChange}
-                      />
-                    )}
+                  <Input
+                    type="text"
+                    placeholder="Название"
+                    {...register(`productsToOrder.${index}.commentProduct` as const)}
                   />
                 </Td>
               </Tr>

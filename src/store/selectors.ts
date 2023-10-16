@@ -1,1 +1,3 @@
-export const getOrders = (state: any) => state.orders;
+import { RootState } from './store';
+
+export const getOrders = (state: RootState) => state.orders;
