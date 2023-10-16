@@ -16,7 +16,8 @@ import {
   Tooltip,
   Tr,
   Heading,
-  Box
+  Box,
+  Text
 } from '@chakra-ui/react';
 import { equals } from 'ramda';
 import { useSelector } from 'react-redux';
@@ -143,6 +144,15 @@ const Orders = () => {
                 </Td>
               </Tr>
             ))}
+            {orders.length === 0 && (
+              <Tr>
+                <Td colSpan={10} textAlign="center">
+                  <Text color={'blackAlpha.700'} fontSize="lg">
+                    Заказов нету
+                  </Text>
+                </Td>
+              </Tr>
+            )}
           </Tbody>
         </Table>
       </TableContainer>
